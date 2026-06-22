@@ -13,3 +13,15 @@ uv sync
 alembic upgrade head
 uvicorn app.main:app --reload
 ```
+## Auth endpoints
+
+- POST /auth/register — create account
+- POST /auth/login — returns JWT token
+- GET /users/me — requires Bearer token
+
+## Protected endpoints (require Authorization: Bearer <token>)
+
+- POST /posts
+- GET /posts/{id}
+- PUT /posts/{id} — only post author
+- DELETE /posts/{id} — only post author
