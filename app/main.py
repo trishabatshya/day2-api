@@ -15,6 +15,16 @@ from app.auth import (
 
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # --- Auth endpoints ---
 
@@ -77,6 +87,13 @@ async def create_post(
     await db.refresh(post)
     return post
 
+@app.get("/posts/all", response_model=list[PostResponse])
+async def get_all_posts(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    result = await db.execute(select(Post))
+    return result.scalars().all()
 
 @app.get("/posts/{post_id}", response_model=PostResponse)
 async def get_post(
@@ -89,6 +106,7 @@ async def get_post(
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     return post
+
 
 
 @app.put("/posts/{post_id}", response_model=PostResponse)
