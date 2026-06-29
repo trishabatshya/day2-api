@@ -17,6 +17,15 @@ app = FastAPI()
 
 from fastapi.middleware.cors import CORSMiddleware
 
+import logging
+import json
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='{"time": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s"}'
+)
+logger = logging.getLogger(__name__)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -30,6 +39,7 @@ app.add_middleware(
 
 @app.post("/auth/register", response_model=UserResponse, status_code=201)
 async def register(user_in: UserRegister, db: AsyncSession = Depends(get_db)):
+    logger.info(f"Register attempt for email: {user_in.email}")
     # Check email not already taken
     result = await db.execute(select(User).where(User.email == user_in.email))
     if result.scalar_one_or_none():
@@ -53,6 +63,7 @@ async def register(user_in: UserRegister, db: AsyncSession = Depends(get_db)):
 
 @app.post("/auth/login", response_model=Token)
 async def login(user_in: UserLogin, db: AsyncSession = Depends(get_db)):
+    logger.info(f"Login attempt for email: {user_in.email}")
     result = await db.execute(select(User).where(User.email == user_in.email))
     user = result.scalar_one_or_none()
 
